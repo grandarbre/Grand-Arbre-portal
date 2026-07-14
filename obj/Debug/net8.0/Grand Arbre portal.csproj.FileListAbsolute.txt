@@ -177,3 +177,4 @@ C:\Users\lehlo\OneDrive\Documents\sod 216 coding\Grand Arbre portal\Grand Arbre 
 C:\Users\lehlo\OneDrive\Documents\sod 216 coding\Grand Arbre portal\Grand Arbre portal\obj\Debug\net8.0\Grand Arbre portal.pdb
 C:\Users\lehlo\OneDrive\Documents\sod 216 coding\Grand Arbre portal\Grand Arbre portal\obj\Debug\net8.0\Grand Arbre portal.genruntimeconfig.cache
 C:\Users\lehlo\OneDrive\Documents\sod 216 coding\Grand Arbre portal\Grand Arbre portal\obj\Debug\net8.0\ref\Grand Arbre portal.dll
+C:\Users\lehlo\OneDrive\Documents\sod 216 coding\Grand Arbre portal\Grand Arbre portal\obj\Debug\net8.0\Grand Arbre portal.sourcelink.json

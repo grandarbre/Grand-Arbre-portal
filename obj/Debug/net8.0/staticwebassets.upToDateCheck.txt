@@ -69,6 +69,7 @@ wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\uploads\0268a13e-1a41-4f47-88f4-c137d5760ae2_Sechaba Ramolahloane CV.docx
 wwwroot\uploads\0d01645d-69d4-4d10-8b24-633b26db4611_Business Plan Business Canvas (3).pdf
+wwwroot\uploads\1615560a-7ead-4d74-8425-9d9329a40a55_Application-Form-External (1).pdf
 wwwroot\uploads\186c5c4e-1dcc-45ab-a5a5-ef3f225d3555_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\1a097c42-6c33-4676-94a5-9f5a5f62462a_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\2410648e-b93a-4a15-9706-382fcebce9cf_Business Plan Business Canvas (3).pdf
@@ -80,11 +81,13 @@ wwwroot\uploads\82098d3a-c026-427e-b3af-7d2b533278bc_Sechaba Ramolahloane CV.pdf
 wwwroot\uploads\8ed3ed26-4ad3-4024-9521-9e709e736439_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\8f676141-773f-44d2-8906-abdf14e2bca4_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\b8c60102-b223-423d-9022-0ad0cf484871_Matric certificate.pdf
+wwwroot\uploads\ccfed246-a1e4-451e-ab60-e897587046e5_cert4.pdf
 wwwroot\uploads\d23f23b1-6128-4a37-aaed-6ee90e1d1b7c_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\dbd7a885-4da0-442e-957b-14d5554120d0_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\e03a5aac-7490-4e39-b643-036f57941726_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\fab679dc-3231-42bb-accf-a36bcc189869_Business Plan Business Canvas (3).pdf
 wwwroot\uploads\profiles\295337de-7ca5-4c3b-9f07-1e3213f627c7_PENDING SITE.png
 wwwroot\uploads\profiles\5e3d5812-2a7c-40b5-af77-63f5755f4d59_Boitumelo Office.jpg (1).jpeg
+wwwroot\uploads\profiles\61549630-3e4a-459a-9e38-35ae223a6111_Mr Mzimkulu.png
 wwwroot\uploads\profiles\6e4483da-b06b-4517-b7a7-f48ce214287c_GAC Logo copy 2 (1).png
 wwwroot\uploads\profiles\813acec4-907c-4efd-89db-f54596abc98b_Black and gold simple page border flyer.png
