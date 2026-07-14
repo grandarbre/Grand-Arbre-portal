@@ -1,0 +1,261 @@
+﻿@{
+    ViewData["Title"] = "Generate Access Codes";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h4><i class="fas fa-key"></i> Generate Individual Access Code</h4>
+                    <p class="mb-0">Create a unique code for each person</p>
+                </div>
+                <div class="card-body">
+                    <form id="generateCodeForm">
+                        <div class="mb-3">
+                            <label class="form-label">Person's Name <span class="text-danger">*</span></label>
+                            <input type="text" id="personName" class="form-control" placeholder="e.g., John Smith" required>
+                            <small class="text-muted">Who is this code for?</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" id="personEmail" class="form-control" placeholder="person@example.com" required>
+                            <small class="text-muted">This email must match when registering</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select id="role" class="form-control" required>
+                                <option value="">-- Select Role --</option>
+                                <option value="Employee">👔 Employee</option>
+                                <option value="Client">👤 Client</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Custom Access Code (Optional)</label>
+                            <input type="text" id="customCode" class="form-control" placeholder="Leave empty for auto-generated">
+                            <small class="text-muted">Auto-generates if left empty</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Expiry Date (Optional)</label>
+                            <input type="date" id="expiryDate" class="form-control">
+                            <small class="text-muted">Leave empty for no expiry</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold w-100">
+                            <i class="fas fa-plus-circle"></i> Generate Code
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h4><i class="fas fa-list"></i> Generated Access Codes</h4>
+                    <p class="mb-0">Each code is unique to one person</p>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Person</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="codesList">
+                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 10px;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+        }
+
+    .badge-active {
+        background: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-used {
+        background: #6c757d;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-expired {
+        background: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0;
+    }
+
+    .btn-sm {
+        padding: 5px 10px;
+        margin: 2px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        loadCodes();
+
+        async function loadCodes() {
+            try {
+                const response = await fetch('/Admin/GetAllAccessCodes');
+                const codes = await response.json();
+
+                const tbody = document.getElementById('codesList');
+
+                if (codes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No codes generated yet. Create your first code!</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                for (let i = 0; i < codes.length; i++) {
+                    const code = codes[i];
+
+                    let statusBadge = '';
+                    if (code.isUsed) {
+                        statusBadge = '<span class="badge-used"> Used</span>';
+                    } else if (code.status === 'Expired') {
+                        statusBadge = '<span class="badge-expired"> Expired</span>';
+                    } else {
+                        statusBadge = '<span class="badge-active"> Active</span>';
+                    }
+
+                    let roleBadge = code.role === 'Employee' ? '👔 Employee' : '👤 Client';
+
+                    html += '<tr>';
+                    html += '<td><code><strong>' + code.code + '</strong></code></td>';
+                    html += '<td>' + escapeHtml(code.purpose || 'N/A') + '</td>';
+                    html += '<td>' + escapeHtml(code.email || 'N/A') + '</td>';
+                    html += '<td>' + roleBadge + '</td>';
+                    html += '<td>' + statusBadge + '</td>';
+                    html += '<td>';
+                    if (!code.isUsed && code.status !== 'Expired') {
+                        html += '<button onclick="deleteCode(' + code.id + ')" class="btn btn-danger btn-sm">Delete</button>';
+                    }
+                    html += '</td>';
+                    html += '</tr>';
+                }
+
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Generate new access code
+        document.getElementById('generateCodeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const personName = document.getElementById('personName').value.trim();
+            const personEmail = document.getElementById('personEmail').value.trim();
+            const role = document.getElementById('role').value;
+            const customCode = document.getElementById('customCode').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value;
+
+            if (!personName || !personEmail || !role) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Generate code if not provided
+            let code = customCode;
+            if (!code) {
+                const prefix = role === 'Employee' ? 'EMP' : 'CLT';
+                const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+                code = prefix + randomNum;
+            }
+
+            const formData = new FormData();
+            formData.append('Code', code.toUpperCase());
+            formData.append('Role', role);
+            formData.append('Purpose', personName);
+            formData.append('Email', personEmail);
+            formData.append('ExpiryDate', expiryDate);
+
+            try {
+                const response = await fetch('/Admin/GenerateAccessCode', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    document.getElementById('generateCodeForm').reset();
+                    loadCodes();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                alert('Error generating code');
+            }
+        });
+
+        async function deleteCode(id) {
+            if (confirm('Delete this access code?')) {
+                const formData = new FormData();
+                formData.append('id', id);
+
+                const response = await fetch('/Admin/DeleteAccessCode', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                alert(result.message);
+                if (result.success) loadCodes();
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}

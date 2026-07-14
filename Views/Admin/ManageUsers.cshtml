@@ -1,0 +1,237 @@
+﻿@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Add New User</h4>
+                </div>
+                <div class="card-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label>Email Address</label>
+                            <input type="email" id="email" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label>Role</label>
+                            <select id="role" class="form-control">
+                                <option value="Employee">Employee</option>
+                                <option value="Client">Client</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-gold w-100">Add User</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>All Users</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search..." />
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersList">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="codeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Created</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" id="modalMessage">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-gold" onclick="copyCode()">Copy Code</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+        }
+
+    .btn-sm {
+        margin: 2px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-warning {
+        background: #FF9800;
+        color: white;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .badge-active {
+        background: green;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .badge-suspended {
+        background: red;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #0F4C5C, #1E6F7F);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 15px 15px 0 0;
+    }
+</style>
+
+<script>
+    var currentCode = '';
+    loadUsers();
+
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        var filter = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#usersList tr');
+        for (var i = 0; i < rows.length; i++) {
+            var text = rows[i].textContent.toLowerCase();
+            rows[i].style.display = text.indexOf(filter) > -1 ? '' : 'none';
+        }
+    });
+
+    function loadUsers() {
+        fetch('/Admin/GetUsers')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var html = '';
+                for (var i = 0; i < data.length; i++) {
+                    var user = data[i];
+                    if (user.role === 'Admin') continue;
+                    var statusClass = user.isActive ? 'badge-active' : 'badge-suspended';
+                    var statusText = user.isActive ? 'Active' : 'Suspended';
+                    html += '<tr>';
+                    html += '<td>' + user.fullName + '</td>';
+                    html += '<td>' + user.email + '</td>';
+                    html += '<td>' + user.role + '</td>';
+                    html += '<td><span class="' + statusClass + '">' + statusText + '</span></td>';
+                    html += '<td>';
+                    html += '<button onclick="toggleStatus(\'' + user.id + '\')" class="btn-sm btn-warning">Toggle</button> ';
+                    html += '<button onclick="deleteUser(\'' + user.id + '\')" class="btn-sm btn-danger">Delete</button>';
+                    html += '</td>';
+                    html += '</tr>';
+                }
+                document.getElementById('usersList').innerHTML = html;
+            });
+    }
+
+    function toggleStatus(userId) {
+        if (!confirm('Toggle user status?')) return;
+        var formData = new FormData();
+        formData.append('userId', userId);
+        fetch('/Admin/ToggleUserStatus', { method: 'POST', body: formData })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                alert(data.message);
+                loadUsers();
+            });
+    }
+
+    function deleteUser(userId) {
+        if (!confirm('Delete this user?')) return;
+        var formData = new FormData();
+        formData.append('userId', userId);
+        fetch('/Admin/RemoveUser', { method: 'POST', body: formData })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                alert(data.message);
+                if (data.success) loadUsers();
+            });
+    }
+
+    document.getElementById('addUserForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var fullName = document.getElementById('fullName').value;
+        var email = document.getElementById('email').value;
+        var role = document.getElementById('role').value;
+        if (!fullName || !email) { alert('Fill all fields'); return; }
+        var formData = new FormData();
+        formData.append('fullName', fullName);
+        formData.append('email', email);
+        formData.append('role', role);
+        fetch('/Admin/AddUser', { method: 'POST', body: formData })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    currentCode = data.accessCode;
+                    document.getElementById('modalMessage').innerHTML = '<h3>User Created!</h3><div style="font-size:24px;font-family:monospace;background:#f0f0f0;padding:10px;">' + data.accessCode + '</div><p>Share this code with the user.</p>';
+                    var modal = new bootstrap.Modal(document.getElementById('codeModal'));
+                    modal.show();
+                    document.getElementById('addUserForm').reset();
+                    loadUsers();
+                } else {
+                    alert(data.message);
+                }
+            });
+    });
+
+    function copyCode() {
+        navigator.clipboard.writeText(currentCode);
+        alert('Copied: ' + currentCode);
+    }
+</script>

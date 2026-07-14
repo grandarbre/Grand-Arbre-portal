@@ -1,0 +1,603 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Grand_Arbre_portal.Models
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Arbre Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fc;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Side Navigation - Full Left Side */
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: #0F4C5C;
+            padding: 0;
+            overflow-y: auto;
+            border-right: 3px solid #D4AF37;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .side-nav::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            .side-nav::-webkit-scrollbar-track {
+                background: rgba(255,255,255,0.05);
+            }
+
+            .side-nav::-webkit-scrollbar-thumb {
+                background: #D4AF37;
+                border-radius: 2px;
+            }
+
+            /* Logo Section */
+            .side-nav .brand-section {
+                padding: 20px 15px 15px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                text-align: center;
+            }
+
+                .side-nav .brand-section .logo-container {
+                    width: 70px;
+                    height: 70px;
+                    margin: 0 auto 10px;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    border: 3px solid #D4AF37;
+                    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: white;
+                }
+
+                    .side-nav .brand-section .logo-container img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+
+                    .side-nav .brand-section .logo-container .no-image {
+                        font-size: 28px;
+                        color: #0F4C5C;
+                        font-weight: 900;
+                    }
+
+                .side-nav .brand-section .brand-main {
+                    color: white;
+                    font-size: 1.1rem;
+                    font-weight: 800;
+                    letter-spacing: 0.5px;
+                }
+
+                    .side-nav .brand-section .brand-main span {
+                        color: #D4AF37;
+                    }
+
+                .side-nav .brand-section .brand-sub {
+                    color: rgba(255,255,255,0.4);
+                    font-size: 0.6rem;
+                    letter-spacing: 1.5px;
+                    text-transform: uppercase;
+                    margin-top: 3px;
+                }
+
+            /* User Profile Section - UPDATED */
+            .side-nav .user-profile {
+                padding: 15px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+                .side-nav .user-profile .user-avatar-wrapper {
+                    position: relative;
+                    flex-shrink: 0;
+                }
+
+                .side-nav .user-profile .user-avatar {
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
+                    overflow: hidden;
+                    border: 2px solid #D4AF37;
+                    background: #D4AF37;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 700;
+                    font-size: 18px;
+                    color: #0F4C5C;
+                    text-transform: uppercase;
+                }
+
+                    .side-nav .user-profile .user-avatar img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+
+                    .side-nav .user-profile .user-avatar .default-avatar {
+                        font-size: 22px;
+                        color: #0F4C5C;
+                    }
+
+                .side-nav .user-profile .user-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                    .side-nav .user-profile .user-info .user-name {
+                        color: white;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .side-nav .user-profile .user-info .user-role {
+                        color: rgba(255,255,255,0.5);
+                        font-size: 0.65rem;
+                        font-weight: 300;
+                    }
+
+                .side-nav .user-profile .logout-btn {
+                    background: transparent;
+                    border: 1px solid rgba(255,255,255,0.15);
+                    color: rgba(255,255,255,0.7);
+                    padding: 5px 12px;
+                    border-radius: 20px;
+                    font-size: 0.7rem;
+                    transition: all 0.3s;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                }
+
+                    .side-nav .user-profile .logout-btn:hover {
+                        background: #D4AF37;
+                        color: #0F4C5C;
+                        border-color: #D4AF37;
+                    }
+
+            /* Navigation Links */
+            .side-nav .nav-section {
+                padding: 15px 0;
+                flex: 1;
+            }
+
+                .side-nav .nav-section .section-title {
+                    color: rgba(255,255,255,0.25);
+                    font-size: 0.6rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1.5px;
+                    padding: 5px 20px 10px;
+                    font-weight: 600;
+                }
+
+            .side-nav .nav-links {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+                .side-nav .nav-links li {
+                    padding: 0;
+                    position: relative;
+                }
+
+                    .side-nav .nav-links li a {
+                        color: rgba(255,255,255,0.7);
+                        font-size: 0.85rem;
+                        font-weight: 500;
+                        padding: 10px 20px;
+                        display: block;
+                        text-decoration: none;
+                        transition: all 0.3s;
+                        border-left: 3px solid transparent;
+                    }
+
+                        .side-nav .nav-links li a:hover {
+                            color: #D4AF37;
+                            background: rgba(212, 175, 55, 0.05);
+                            border-left-color: #D4AF37;
+                        }
+
+                        .side-nav .nav-links li a i {
+                            margin-right: 12px;
+                            font-size: 0.9rem;
+                            width: 20px;
+                            text-align: center;
+                        }
+
+                        .side-nav .nav-links li a.active {
+                            color: #D4AF37;
+                            background: rgba(212, 175, 55, 0.08);
+                            border-left-color: #D4AF37;
+                        }
+
+                        .side-nav .nav-links li a .badge-nav {
+                            float: right;
+                            background: #D4AF37;
+                            color: #0F4C5C;
+                            font-size: 0.6rem;
+                            padding: 2px 8px;
+                            border-radius: 10px;
+                            font-weight: 700;
+                        }
+
+                    /* Dropdown in side nav - FIXED VISIBILITY */
+                    .side-nav .nav-links li .dropdown-menu {
+                        position: relative !important;
+                        float: none !important;
+                        background: rgba(255,255,255,0.05) !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        display: none;
+                        width: 100% !important;
+                        transform: none !important;
+                        inset: auto !important;
+                    }
+
+                        .side-nav .nav-links li .dropdown-menu.show {
+                            display: block !important;
+                        }
+
+                        .side-nav .nav-links li .dropdown-menu .dropdown-item {
+                            color: rgba(255,255,255,0.6) !important;
+                            font-size: 0.8rem !important;
+                            padding: 8px 20px 8px 52px !important;
+                            border-left: 3px solid transparent !important;
+                            background: transparent !important;
+                        }
+
+                            .side-nav .nav-links li .dropdown-menu .dropdown-item:hover {
+                                background: rgba(212, 175, 55, 0.05) !important;
+                                color: #D4AF37 !important;
+                                border-left-color: #D4AF37 !important;
+                            }
+
+                            .side-nav .nav-links li .dropdown-menu .dropdown-item i {
+                                margin-right: 10px;
+                                font-size: 0.75rem;
+                                width: 16px;
+                                text-align: center;
+                            }
+
+                    .side-nav .nav-links li .dropdown-toggle::after {
+                        float: right;
+                        margin-top: 6px;
+                    }
+
+            /* Footer in Side Nav */
+            .side-nav .nav-footer {
+                padding: 15px 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+                text-align: center;
+            }
+
+                .side-nav .nav-footer p {
+                    color: rgba(255,255,255,0.2);
+                    font-size: 0.6rem;
+                    margin: 0;
+                    letter-spacing: 0.5px;
+                }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            padding: 30px;
+            min-height: 100vh;
+            width: calc(100% - 240px);
+        }
+
+        /* Mobile Toggle */
+        .nav-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #0F4C5C;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+            .nav-toggle:hover {
+                background: #D4AF37;
+                color: #0F4C5C;
+            }
+
+        /* Responsive */
+        @@media (max-width: 991px) {
+            .side-nav {
+                width: 220px;
+            }
+
+            .main-content {
+                margin-left: 220px;
+                width: calc(100% - 220px);
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+
+            .side-nav {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+            }
+
+                .side-nav.open {
+                    transform: translateX(0);
+                }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 15px;
+                padding-top: 60px;
+            }
+
+            .side-nav-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+                .side-nav-overlay.show {
+                    display: block;
+                }
+        }
+
+        @@media (max-width: 576px) {
+            .side-nav {
+                width: 100%;
+            }
+
+                .side-nav .brand-section .logo-container {
+                    width: 55px;
+                    height: 55px;
+                }
+
+                .side-nav .brand-section .brand-main {
+                    font-size: 0.95rem;
+                }
+
+                .side-nav .user-profile .user-avatar {
+                    width: 35px;
+                    height: 35px;
+                    font-size: 14px;
+                }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="nav-toggle" onclick="toggleNav()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Side Navigation Overlay -->
+    <div class="side-nav-overlay" id="navOverlay" onclick="toggleNav()"></div>
+
+    <!-- Side Navigation - ONLY SHOW WHEN LOGGED IN -->
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <nav class="side-nav" id="sideNav">
+            <!-- Logo Section -->
+            <div class="brand-section">
+                <a href="https://www.grandarbre.co.za" target="_blank" style="text-decoration: none;">
+                    <div class="logo-container">
+                        <img src="~/images/GAC Logo copy 2 (1).png" alt="Grand Arbre Logo" />
+                    </div>
+                    <div class="brand-main">GRAND ARBRE <span>CONSULTING</span></div>
+                    <div class="brand-sub">Alive. Inspired. Motivated.</div>
+                </a>
+            </div>
+
+            <!-- User Profile Section with Profile Picture -->
+            <div class="user-profile">
+                <div class="user-avatar-wrapper">
+                    <div class="user-avatar">
+                        @{
+                            var user = await UserManager.GetUserAsync(User);
+                            var profilePicturePath = user?.ProfilePicturePath;
+                            var firstName = User.Identity.Name?.Split('@')[0] ?? "U";
+                            var initial = firstName.Length > 0 ? firstName[0].ToString().ToUpper() : "U";
+                        }
+                        @if (!string.IsNullOrEmpty(profilePicturePath))
+                        {
+                            <img src="@profilePicturePath" alt="Profile Picture" />
+                        }
+                        else
+                        {
+                            <span class="default-avatar">@initial</span>
+                        }
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">@User.Identity.Name</div>
+                    <div class="user-role">
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <span>Administrator</span>
+                        }
+                        else if (User.IsInRole("Employee"))
+                        {
+                            <span>Employee</span>
+                        }
+                        else
+                        {
+                            <span>Client</span>
+                        }
+                    </div>
+                </div>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="nav-section">
+                <div class="section-title">Main Menu</div>
+                <ul class="nav-links">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li><a href="/Admin/Dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown"><i class="fas fa-cogs"></i> Admin <span class="badge-nav">3</span></a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/Admin/ManageUsers"><i class="fas fa-users"></i> Manage Users</a></li>
+                                <li><a class="dropdown-item" href="/Profile/AllUsers"><i class="fas fa-id-card"></i> All Profiles</a></li>
+                                <li><a class="dropdown-item" href="/Document/MyDocuments"><i class="fas fa-folder-open"></i> Documents</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/Announcement/Manage"><i class="fas fa-bullhorn"></i> Manage Announcements</a></li>
+                        <li><a href="/Announcement/Create"><i class="fas fa-plus-circle"></i> Create Announcement</a></li>
+                        <li><a href="/Profile/Index"><i class="fas fa-user-circle"></i> Profile</a></li>
+                        <li><a href="https://www.grandarbre.co.za" target="_blank"><i class="fas fa-globe"></i> Company Website</a></li>
+                    }
+                    else if (User.IsInRole("Employee"))
+                    {
+                        <li><a href="/Employee/Dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/Document/Upload"><i class="fas fa-upload"></i> Upload</a></li>
+                        <li><a href="/Document/MyDocuments"><i class="fas fa-folder-open"></i> My Documents</a></li>
+                        <li><a href="/Announcement/Manage"><i class="fas fa-bullhorn"></i> Manage Announcements</a></li>
+                        <li><a href="/Announcement/Create"><i class="fas fa-plus-circle"></i> Create Announcement</a></li>
+                        <li><a href="/Profile/Index"><i class="fas fa-user-circle"></i> Profile</a></li>
+                        <li><a href="https://www.grandarbre.co.za" target="_blank"><i class="fas fa-globe"></i> Company Website</a></li>
+                    }
+                    else if (User.IsInRole("Client"))
+                    {
+                        <li><a href="/Client/Dashboard" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="/Document/MyDocuments"><i class="fas fa-folder-open"></i> My Documents</a></li>
+                        <li><a href="/Announcement/Index"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                        <li><a href="/Profile/Index"><i class="fas fa-user-circle"></i> Profile</a></li>
+                        <li><a href="https://www.grandarbre.co.za" target="_blank"><i class="fas fa-globe"></i> Company Website</a></li>
+                    }
+                </ul>
+            </div>
+
+            <!-- Footer -->
+            <div class="nav-footer">
+                <p>&copy; 2017 Grand Arbre</p>
+            </div>
+        </nav>
+    }
+
+    <!-- Main Content -->
+    <div class="main-content" style="@(User.Identity != null && User.Identity.IsAuthenticated ? "" : "margin-left: 0; width: 100%;")">
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleNav() {
+            var nav = document.getElementById('sideNav');
+            var overlay = document.getElementById('navOverlay');
+            if (nav) {
+                nav.classList.toggle('open');
+                overlay.classList.toggle('show');
+            }
+        }
+
+        // Close nav when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            var nav = document.getElementById('sideNav');
+            var toggle = document.querySelector('.nav-toggle');
+            var overlay = document.getElementById('navOverlay');
+
+            if (window.innerWidth <= 768 && nav) {
+                if (!nav.contains(event.target) && !toggle.contains(event.target) && nav.classList.contains('open')) {
+                    nav.classList.remove('open');
+                    overlay.classList.remove('show');
+                }
+            }
+        });
+
+        // Close nav on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                var nav = document.getElementById('sideNav');
+                var overlay = document.getElementById('navOverlay');
+                if (nav) {
+                    nav.classList.remove('open');
+                    overlay.classList.remove('show');
+                }
+            }
+        });
+
+        // Fix dropdown visibility
+        document.addEventListener('DOMContentLoaded', function() {
+            var dropdownToggles = document.querySelectorAll('.side-nav .dropdown-toggle');
+            dropdownToggles.forEach(function(toggle) {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var parent = this.closest('.dropdown');
+                    var menu = parent.querySelector('.dropdown-menu');
+                    if (menu) {
+                        menu.classList.toggle('show');
+                    }
+                });
+            });
+
+            // Set active link based on current URL
+            var currentUrl = window.location.pathname;
+            var links = document.querySelectorAll('.side-nav .nav-links li a:not(.dropdown-toggle)');
+            links.forEach(function(link) {
+                var href = link.getAttribute('href');
+                if (href && currentUrl.indexOf(href) !== -1 && href !== '#') {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

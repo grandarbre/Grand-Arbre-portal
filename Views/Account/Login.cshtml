@@ -1,0 +1,167 @@
+﻿
+@model GrandArbrePortal.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login - Grand Arbre";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Arbre - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0F4C5C 0%, #1E6F7F 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #0F4C5C 0%, #1E6F7F 100%);
+            padding: 30px;
+            text-align: center;
+        }
+        .login-header h1 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        .login-header h1 i {
+            color: #D4AF37;
+            margin-right: 10px;
+        }
+        .login-header p {
+            color: #D9F0F2;
+            font-size: 0.85rem;
+        }
+        .login-body {
+            padding: 35px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #0F4C5C;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            background: #D4AF37;
+            color: #0F4C5C;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            background: #B88A1A;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .register-link a {
+            color: #D4AF37;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .validation-error {
+            color: #c00;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1><i class="fas fa-tree"></i> Grand Arbre</h1>
+            <p>Document Management Portal</p>
+        </div>
+        <div class="login-body">
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+            {
+                <div class="error-message">
+                    @Html.ValidationSummary(true)
+                </div>
+            }
+
+            <form asp-controller="Account" asp-action="Login" method="post">
+                <div class="form-group">
+                    <label asp-for="Email"><i class="fas fa-envelope"></i> Email Address</label>
+                    <input asp-for="Email" type="email" placeholder="Enter your email" />
+                    <span asp-validation-for="Email" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password"><i class="fas fa-lock"></i> Password</label>
+                    <input asp-for="Password" type="password" placeholder="Enter your password" />
+                    <span asp-validation-for="Password" class="validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input asp-for="RememberMe" type="checkbox" /> Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+            </form>
+
+            <div class="register-link">
+                Don't have an account? <a asp-action="Register">Register here</a>
+            </div>
+
+            <div class="register-link" style="margin-top: 10px; border-top: none;">
+                <small>Need an access code? Contact your administrator</small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

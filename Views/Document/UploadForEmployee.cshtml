@@ -1,0 +1,82 @@
+﻿@model Grand_Arbre_portal.ViewModels.ClientUploadViewModel
+@{
+    ViewData["Title"] = "Upload Document for Employee";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+            <h4><i class="fas fa-cloud-upload-alt"></i> Upload Required Document</h4>
+            <p class="mb-0">Upload documents requested by your employee</p>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Document Title <span class="text-danger">*</span></label>
+                    <input type="text" id="Title" name="Title" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea id="Description" name="Description" class="form-control" rows="3" placeholder="What is this document for?"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select File <span class="text-danger">*</span></label>
+                    <input type="file" id="File" name="File" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                </div>
+
+                <button type="submit" class="btn" style="background: #D4AF37; color: #0F4C5C;">
+                    <i class="fas fa-upload"></i> Submit Document
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+            <h4><i class="fas fa-folder-open"></i> My Documents</h4>
+        </div>
+        <div class="card-body">
+            <div id="myDocuments"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function loadMyDocuments() {
+            const response = await fetch('/Document/MyDocuments');
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const content = doc.querySelector('.container')?.innerHTML || '<div class="text-muted">No documents found</div>';
+            document.getElementById('myDocuments').innerHTML = content;
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('Title', document.getElementById('Title').value);
+            formData.append('Description', document.getElementById('Description').value);
+            formData.append('File', document.getElementById('File').files[0]);
+
+            const response = await fetch('/Document/UploadForEmployee', { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Document uploaded successfully!');
+                location.reload();
+            } else {
+                alert(result.message || 'Error uploading document');
+            }
+        });
+
+        loadMyDocuments();
+    </script>
+}

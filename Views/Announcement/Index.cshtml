@@ -1,0 +1,301 @@
+﻿@{
+    ViewData["Title"] = "Announcements";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4><i class="fas fa-bullhorn"></i> Announcements</h4>
+                    <p class="mb-0">Stay updated with the latest news and updates</p>
+                </div>
+                <span class="badge bg-light" id="announcementCount" style="color: #0F4C5C;">0</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="announcementsList">
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #D4AF37;"></i>
+                    <p class="mt-2 text-muted">Loading announcements...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Announcement Detail Modal -->
+<div class="modal fade" id="announcementModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                <h5 class="modal-title" id="modalTitle"><i class="fas fa-bullhorn"></i> Announcement</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center py-3">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #D4AF37;"></i>
+                    <p class="mt-2">Loading announcement...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .announcement-card {
+        border-left: 4px solid #D4AF37;
+        transition: all 0.3s;
+        margin-bottom: 15px;
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .announcement-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #D4AF37;
+        }
+
+        .announcement-card.important {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+            .announcement-card.important:hover {
+                border-color: #dc3545;
+            }
+
+        .announcement-card .badge-important {
+            background: #dc3545;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .announcement-card .badge-normal {
+            background: #D4AF37;
+            color: #0F4C5C;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .announcement-card .content-preview {
+            color: #4A5A6A;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-height: 3.2em;
+        }
+
+        .announcement-card .content-full {
+            color: #4A5A6A;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            display: none;
+            padding-top: 10px;
+            border-top: 1px solid #e8ecf0;
+            margin-top: 10px;
+        }
+
+        .announcement-card.expanded .content-full {
+            display: block;
+        }
+
+        .announcement-card.expanded .content-preview {
+            display: none;
+        }
+
+        .announcement-card .meta {
+            color: #6B7A8A;
+            font-size: 0.85rem;
+        }
+
+        .announcement-card .read-more-btn {
+            color: #D4AF37;
+            font-weight: 600;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+            .announcement-card .read-more-btn:hover {
+                color: #B88A1A;
+                text-decoration: underline;
+            }
+
+    .modal-body .announcement-detail {
+        padding: 10px 0;
+    }
+
+        .modal-body .announcement-detail .detail-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0F4C5C;
+            margin-bottom: 15px;
+        }
+
+        .modal-body .announcement-detail .detail-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #4A5A6A;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+
+        .modal-body .announcement-detail .detail-meta {
+            font-size: 0.85rem;
+            color: #6B7A8A;
+            padding-top: 15px;
+            border-top: 1px solid #e8ecf0;
+        }
+
+    .announcement-card .view-btn {
+        background: #D4AF37;
+        color: #0F4C5C;
+        border: none;
+        padding: 4px 15px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+        .announcement-card .view-btn:hover {
+            background: #B88A1A;
+            color: white;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        var announcementsData = [];
+
+        loadAnnouncements();
+
+        async function loadAnnouncements() {
+            try {
+                const response = await fetch('/Announcement/GetAnnouncements');
+                announcementsData = await response.json();
+
+                const container = document.getElementById('announcementsList');
+                const countBadge = document.getElementById('announcementCount');
+
+                if (announcementsData.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">No announcements available at this time.</div>';
+                    countBadge.textContent = '0';
+                    return;
+                }
+
+                countBadge.textContent = announcementsData.length;
+
+                let html = '';
+                for (let i = 0; i < announcementsData.length; i++) {
+                    const a = announcementsData[i];
+                    const importantClass = a.isImportant ? 'important' : '';
+                    const badge = a.isImportant
+                        ? '<span class="badge-important"><i class="fas fa-exclamation-triangle"></i> Important</span>'
+                        : '<span class="badge-normal"><i class="fas fa-info-circle"></i> Normal</span>';
+
+                    // Truncate content for preview
+                    const previewContent = a.content.length > 150 ? a.content.substring(0, 150) + '...' : a.content;
+
+                    html += `
+                        <div class="announcement-card ${importantClass} card" onclick="viewAnnouncement(${a.id})" data-id="${a.id}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="mb-1">${escapeHtml(a.title)} ${badge}</h5>
+                                    <button class="view-btn" onclick="event.stopPropagation(); viewAnnouncement(${a.id})">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </div>
+                                <div class="content-preview">${escapeHtml(previewContent)}</div>
+                                <div class="content-full">${escapeHtml(a.content)}</div>
+                                <div class="meta mt-2">
+                                    <i class="fas fa-user"></i> ${escapeHtml(a.createdByUserName)}
+                                    <i class="fas fa-clock ms-3"></i> ${a.createdAtFormatted}
+                                    ${a.expiryDateFormatted !== 'Never' ? `<span class="ms-3"><i class="fas fa-calendar-alt"></i> Expires: ${a.expiryDateFormatted}</span>` : ''}
+                                </div>
+                                <div class="mt-2">
+                                    <button class="read-more-btn" onclick="event.stopPropagation(); toggleExpand(${a.id})">
+                                        <i class="fas fa-chevron-down"></i> Read More
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+                document.getElementById('announcementsList').innerHTML = '<div class="alert alert-danger">Error loading announcements.</div>';
+            }
+        }
+
+        // Toggle expand/collapse on card
+        function toggleExpand(id) {
+            const card = document.querySelector(`.announcement-card[data-id="${id}"]`);
+            if (card) {
+                card.classList.toggle('expanded');
+                const btn = card.querySelector('.read-more-btn');
+                if (card.classList.contains('expanded')) {
+                    btn.innerHTML = '<i class="fas fa-chevron-up"></i> Show Less';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-chevron-down"></i> Read More';
+                }
+            }
+        }
+
+        // View announcement in modal
+        function viewAnnouncement(id) {
+            const announcement = announcementsData.find(a => a.id === id);
+            if (!announcement) {
+                alert('Announcement not found');
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('announcementModal'));
+
+            document.getElementById('modalTitle').innerHTML = `
+                <i class="fas fa-bullhorn"></i> ${escapeHtml(announcement.title)}
+                ${announcement.isImportant ? '<span class="badge bg-danger ms-2"><i class="fas fa-exclamation-triangle"></i> Important</span>' : ''}
+            `;
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="announcement-detail">
+                    <div class="detail-content">${escapeHtml(announcement.content)}</div>
+                    <div class="detail-meta">
+                        <p><i class="fas fa-user"></i> Posted by: <strong>${escapeHtml(announcement.createdByUserName)}</strong></p>
+                        <p><i class="fas fa-clock"></i> Posted on: ${announcement.createdAtFormatted}</p>
+                        ${announcement.expiryDateFormatted !== 'Never' ? `<p><i class="fas fa-calendar-alt"></i> Expires: ${announcement.expiryDateFormatted}</p>` : ''}
+                        ${announcement.isImportant ? '<p><span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> This is an important announcement</span></p>' : ''}
+                    </div>
+                </div>
+            `;
+
+            modal.show();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}

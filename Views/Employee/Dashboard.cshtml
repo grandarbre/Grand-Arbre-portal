@@ -1,0 +1,365 @@
+﻿@{
+    ViewData["Title"] = "Employee Dashboard";
+    var totalDocuments = ViewBag.TotalDocuments as int? ?? 0;
+    var totalDownloads = ViewBag.TotalDownloads as int? ?? 0;
+    var activeClients = ViewBag.ActiveClients as int? ?? 0;
+    var clientUploads = ViewBag.ClientUploads as int? ?? 0;
+    var recentDocuments = ViewBag.RecentDocuments as List<Grand_Arbre_portal.Models.Document> ?? new List<Grand_Arbre_portal.Models.Document>();
+    var userName = ViewBag.UserName as string ?? "Employee";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div>
+                            <h2 class="mb-0"><i class="fas fa-user-tie"></i> Welcome, @userName!</h2>
+                            <p class="mb-0" style="opacity: 0.8;">Here's your work overview for today</p>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge" style="background: #D4AF37; color: #0F4C5C; font-size: 14px; padding: 8px 16px;">
+                                <i class="fas fa-calendar-alt"></i> @DateTime.Now.ToString("dddd, MMMM dd, yyyy")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <i class="fas fa-file-alt" style="font-size: 32px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2 fw-bold text-primary">@totalDocuments</h3>
+                    <p class="text-muted mb-0">My Documents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <i class="fas fa-download" style="font-size: 32px; color: #D4AF37;"></i>
+                    <h3 class="mt-2 fw-bold text-success">@totalDownloads</h3>
+                    <p class="text-muted mb-0">Downloads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <i class="fas fa-users" style="font-size: 32px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2 fw-bold text-info">@activeClients</h3>
+                    <p class="text-muted mb-0">Active Clients</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 mb-2">
+            <div class="card text-center border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: #D4AF37;"></i>
+                    <h3 class="mt-2 fw-bold text-warning">@clientUploads</h3>
+                    <p class="text-muted mb-0">Client Uploads</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Document/Upload" class="btn btn-gold">
+                            <i class="fas fa-upload"></i> Upload Document for Client
+                        </a>
+                        <a href="/Document/Dashboard" class="btn btn-outline-gold">
+                            <i class="fas fa-folder-open"></i> Document Dashboard
+                        </a>
+                        <a href="/Profile/Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-edit"></i> Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Account Info</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Name:</strong></div>
+                        <div class="col-7" id="empName">@userName</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Email:</strong></div>
+                        <div class="col-7" id="empEmail">@User.Identity.Name</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Role:</strong></div>
+                        <div class="col-7"><span class="badge" style="background: #1E6F7F; color: white;">Employee</span></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Total Clients:</strong></div>
+                        <div class="col-7" id="empClients">@activeClients</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Documents & Client Uploads -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> My Recent Documents</h5>
+                </div>
+                <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                    <div id="recentDocs">
+                        @if (!recentDocuments.Any())
+                        {
+                            <div class="text-center text-muted py-3">
+                                <i class="fas fa-file-alt" style="font-size: 32px;"></i>
+                                <p class="mt-2">No documents uploaded yet</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="list-group">
+                                @foreach (var doc in recentDocuments)
+                                {
+                                    <div class="list-group-item list-group-item-action">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="fas fa-file text-primary"></i>
+                                                <strong>@doc.Title</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user"></i> @doc.ClientUserName
+                                                    <i class="fas fa-calendar-alt ms-2"></i> @doc.UploadedAt.ToString("MMM dd, yyyy")
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <a href="/Document/Download/@doc.Id" class="btn btn-sm btn-gold">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <div class="text-end mt-2">
+                        <a href="/Document/Dashboard" class="btn btn-sm btn-gold">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5 class="mb-0"><i class="fas fa-cloud-upload-alt"></i> Client Uploads</h5>
+                </div>
+                <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                    <div id="clientUploadsList">
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                    <div class="text-end mt-2">
+                        <a href="/Document/Dashboard" class="btn btn-sm btn-gold">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-gold {
+        background: transparent;
+        border: 2px solid #D4AF37;
+        color: #D4AF37;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+        .btn-outline-gold:hover {
+            background: #D4AF37;
+            color: #0F4C5C;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        transition: all 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+        transition: all 0.2s;
+    }
+
+        .list-group-item:hover {
+            background: #f8f9fa;
+        }
+
+        .list-group-item:first-child {
+            border-top: none;
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+    .btn-sm {
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+
+    /* Scrollbar styles */
+    .card-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .card-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .card-body::-webkit-scrollbar-thumb {
+        background: #D4AF37;
+        border-radius: 3px;
+    }
+
+        .card-body::-webkit-scrollbar-thumb:hover {
+            background: #B88A1A;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        // Load client uploads
+        loadClientUploads();
+
+        async function loadClientUploads() {
+            try {
+                const response = await fetch('/Employee/GetClientUploads');
+                const data = await response.json();
+
+                const container = document.getElementById('clientUploadsList');
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-cloud-upload-alt" style="font-size: 32px;"></i><p class="mt-2">No client uploads yet</p></div>';
+                    return;
+                }
+
+                let html = '<div class="list-group">';
+                for (let i = 0; i < data.length; i++) {
+                    const doc = data[i];
+                    html += `
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-file-upload text-success"></i>
+                                    <strong>${escapeHtml(doc.title)}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user"></i> ${escapeHtml(doc.uploadedByUserName)}
+                                        <i class="fas fa-calendar-alt ms-2"></i> ${doc.uploadedAtFormatted}
+                                    </small>
+                                </div>
+                                <div>
+                                    <a href="/Document/Download/${doc.id}" class="btn btn-sm btn-gold">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading client uploads:', error);
+                document.getElementById('clientUploadsList').innerHTML = '<div class="text-center text-danger py-3">Error loading client uploads</div>';
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}

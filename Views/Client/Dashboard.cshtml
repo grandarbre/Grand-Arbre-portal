@@ -1,0 +1,274 @@
+﻿@{
+    ViewData["Title"] = "Client Dashboard";
+}
+
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                <div class="card-body">
+                    <h2><i class="fas fa-user-circle"></i> Welcome, @User.Identity.Name!</h2>
+                    <p class="mb-0">Your documents and account overview</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-file-alt" style="font-size: 48px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2" id="totalDocs">-</h3>
+                    <p class="text-muted mb-0">My Documents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-download" style="font-size: 48px; color: #D4AF37;"></i>
+                    <h3 class="mt-2" id="totalDownloads">-</h3>
+                    <p class="text-muted mb-0">Total Downloads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-clock" style="font-size: 48px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2" id="recentDocs">-</h3>
+                    <p class="text-muted mb-0">Recent Uploads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-user-check" style="font-size: 48px; color: #D4AF37;"></i>
+                    <h3 class="mt-2">Active</h3>
+                    <p class="text-muted mb-0">Account Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Document/MyDocuments" class="btn btn-gold">
+                            <i class="fas fa-folder-open"></i> View My Documents
+                        </a>
+                        <a href="/Document/UploadForEmployee" class="btn btn-outline-secondary">
+                            <i class="fas fa-upload"></i> Upload Document for Employee
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-info-circle"></i> Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Name:</strong></div>
+                        <div class="col-7" id="userName">-</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Email:</strong></div>
+                        <div class="col-7" id="userEmail">-</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Access Code:</strong></div>
+                        <div class="col-7" id="userAccessCode">-</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5"><strong>Joined:</strong></div>
+                        <div class="col-7" id="userJoined">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Documents -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-clock"></i> Recent Documents</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Downloads</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentDocsList">
+                                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-2">
+                        <a href="/Document/MyDocuments" class="btn btn-sm btn-gold">View All Documents</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        font-weight: bold;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        color: #0F4C5C;
+        font-weight: bold;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        var userId = '@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value';
+
+        loadClientInfo();
+        loadClientStats();
+        loadRecentDocuments();
+
+        function loadClientInfo() {
+            fetch('/Client/GetClientInfo')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userName').innerText = data.fullName;
+                    document.getElementById('userEmail').innerText = data.email;
+                    document.getElementById('userAccessCode').innerText = data.accessCode || 'N/A';
+                    document.getElementById('userJoined').innerText = new Date(data.createdAt).toLocaleDateString();
+                })
+                .catch(error => {
+                    console.error('Error loading client info:', error);
+                });
+        }
+
+        function loadClientStats() {
+            fetch('/Client/GetClientStats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalDocs').innerText = data.totalDocuments;
+                    document.getElementById('totalDownloads').innerText = data.totalDownloads;
+                    document.getElementById('recentDocs').innerText = data.recentDocuments;
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                });
+        }
+
+        function loadRecentDocuments() {
+            fetch('/Document/GetDocuments')
+                .then(response => response.json())
+                .then(data => {
+                    var tbody = document.getElementById('recentDocsList');
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No documents found</td></tr>';
+                        return;
+                    }
+
+                    // Get only the 5 most recent
+                    var recent = data.slice(0, 5);
+                    var html = '';
+
+                    for (var i = 0; i < recent.length; i++) {
+                        var doc = recent[i];
+                        var date = new Date(doc.uploadedAtFormatted).toLocaleDateString();
+
+                        html += '<tr>';
+                        html += '<td><strong>' + escapeHtml(doc.title) + '</strong></td>';
+                        html += '<td>' + escapeHtml(doc.uploadedByUserName) + '</td>';
+                        html += '<td>' + date + '</td>';
+                        html += '<td>' + doc.downloadCount + '</td>';
+                        html += '<td><a href="/Document/Download/' + doc.id + '" class="btn btn-sm" style="background: #D4AF37; color: #0F4C5C;">Download</a></td>';
+                        html += '</tr>';
+                    }
+
+                    tbody.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading documents:', error);
+                    document.getElementById('recentDocsList').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading documents</td></tr>';
+                });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}

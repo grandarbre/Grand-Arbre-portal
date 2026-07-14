@@ -1,0 +1,105 @@
+﻿@model Grand_Arbre_portal.ViewModels.CreateAnnouncementViewModel
+@{
+    ViewData["Title"] = "Create Announcement";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h4><i class="fas fa-bullhorn"></i> Create Announcement</h4>
+                    <p class="mb-0">Share important updates with all clients</p>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> @TempData["Success"]
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> All clients will receive an email notification when you post an announcement.
+                    </div>
+
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter announcement title" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Content <span class="text-danger">*</span></label>
+                            <textarea asp-for="Content" class="form-control" rows="6" placeholder="Write your announcement content here..." required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ExpiryDate" class="form-label">Expiry Date (Optional)</label>
+                            <input asp-for="ExpiryDate" type="date" class="form-control" />
+                            <small class="text-muted">The announcement will be hidden after this date</small>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsImportant" class="form-check-input" />
+                            <label asp-for="IsImportant" class="form-check-label">
+                                <span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Mark as Important</span>
+                            </label>
+                            <br><small class="text-muted">Important announcements will appear at the top with a red border</small>
+                        </div>
+                        <button type="submit" class="btn btn-gold w-100">
+                            <i class="fas fa-paper-plane"></i> Publish Announcement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .form-control:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,284 @@
+﻿@model Grand_Arbre_portal.Models.ApplicationUser
+@{
+    ViewData["Title"] = "User Profile - Admin";
+    var role = ViewBag.Role as string ?? "None";
+    var documentCount = ViewBag.DocumentCount as int? ?? 0;
+    var downloadCount = ViewBag.DownloadCount as int? ?? 0;
+    var profilePicture = ViewBag.ProfilePicturePath as string;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isCurrentUser = currentUserId == Model.Id;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h4><i class="fas fa-user-circle"></i> User Profile</h4>
+                </div>
+                <div class="card-body text-center">
+                    <!-- Profile Picture -->
+                    <div class="mb-3">
+                        @if (!string.IsNullOrEmpty(profilePicture))
+                        {
+                            <img src="@profilePicture" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #D4AF37;" />
+                        }
+                        else
+                        {
+                            <div style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #0F4C5C, #1E6F7F); display: flex; align-items: center; justify-content: center; border: 4px solid #D4AF37; margin: 0 auto;">
+                                <i class="fas fa-user" style="font-size: 60px; color: #D4AF37;"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <h4>@Model.FullName</h4>
+                    <p class="text-muted">@Model.Email</p>
+                    <div class="mb-2">
+                        <span class="badge" style="background: #D4AF37; color: #0F4C5C; padding: 8px 15px;">
+                            <i class="fas fa-tag"></i> @role
+                        </span>
+                        <span id="statusBadge" class="badge @(Model.IsActive ? "bg-success" : "bg-danger")">
+                            <i class="fas @(Model.IsActive ? "fa-check-circle" : "fa-ban")"></i>
+                            <span id="statusText">@(Model.IsActive ? "Active" : "Suspended")</span>
+                        </span>
+                    </div>
+                    <hr />
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h5>@documentCount</h5>
+                            <p class="text-muted">Documents</p>
+                        </div>
+                        <div class="col-6">
+                            <h5>@downloadCount</h5>
+                            <p class="text-muted">Downloads</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h4><i class="fas fa-info-circle"></i> User Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Full Name:</strong></div>
+                        <div class="col-8">@Model.FullName</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Email:</strong></div>
+                        <div class="col-8">@Model.Email</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Phone:</strong></div>
+                        <div class="col-8">@(Model.PhoneNumber ?? "Not provided")</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Access Code:</strong></div>
+                        <div class="col-8"><code style="background: #D4AF37; padding: 5px 10px; border-radius: 5px;">@Model.AccessCode</code></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Role:</strong></div>
+                        <div class="col-8">@role</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Status:</strong></div>
+                        <div class="col-8">
+                            <span id="statusText2" class="badge @(Model.IsActive ? "bg-success" : "bg-danger")" style="font-size: 14px; padding: 6px 12px;">
+                                @(Model.IsActive ? "✅ Active" : "⛔ Suspended")
+                            </span>
+                            @if (!isCurrentUser)
+                            {
+                                <button id="toggleStatusBtn" class="btn @(Model.IsActive ? "btn-warning" : "btn-success") btn-sm ms-2" onclick="toggleUserStatus('@Model.Id')">
+                                    <i class="fas @(Model.IsActive ? "fa-pause" : "fa-play")"></i>
+                                    @(Model.IsActive ? "Suspend" : "Activate")
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted ms-2"><i class="fas fa-info-circle"></i> Cannot change your own status</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Joined:</strong></div>
+                        <div class="col-8">@Model.CreatedAt.ToString("MMMM dd, yyyy")</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Last Login:</strong></div>
+                        <div class="col-8">@(Model.LastLoginAt?.ToString("MMMM dd, yyyy HH:mm") ?? "Never")</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Documents:</strong></div>
+                        <div class="col-8">@documentCount</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Total Downloads:</strong></div>
+                        <div class="col-8">@downloadCount</div>
+                    </div>
+                    <hr />
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/Profile/AllUsers" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to All Users
+                        </a>
+                        <a href="/Admin/ManageUsers" class="btn btn-gold">
+                            <i class="fas fa-users"></i> Manage Users
+                        </a>
+                        @if (!isCurrentUser)
+                        {
+                            <a href="/Admin/GenerateAccessCode?userId=@Model.Id" class="btn btn-info" onclick="event.preventDefault(); generateNewCode('@Model.Id')">
+                                <i class="fas fa-key"></i> Generate New Code
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .badge {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    code {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+        .btn-info:hover {
+            background: #138496;
+            color: white;
+        }
+
+    #toggleStatusBtn {
+        transition: all 0.3s;
+        min-width: 100px;
+    }
+
+        #toggleStatusBtn:hover {
+            transform: scale(1.05);
+        }
+</style>
+
+@section Scripts {
+    <script>
+        async function toggleUserStatus(userId) {
+            var button = document.getElementById('toggleStatusBtn');
+            var currentAction = button.innerText.trim();
+
+            var confirmMessage = currentAction === 'Suspend'
+                ? 'Are you sure you want to SUSPEND this user?\n\nSuspended users cannot log in or access documents.'
+                : 'Are you sure you want to ACTIVATE this user?\n\nThe user will be able to log in and access documents again.';
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            // Disable button while processing
+            button.disabled = true;
+            button.innerText = 'Processing...';
+
+            try {
+                var formData = new FormData();
+                formData.append('userId', userId);
+
+                var response = await fetch('/Admin/ToggleUserStatus', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                var result = await response.json();
+
+                if (result.success) {
+                    // Update UI
+                    var isActive = result.isActive;
+                    var statusText = isActive ? 'Active' : 'Suspended';
+                    var statusIcon = isActive ? '✅ Active' : '⛔ Suspended';
+
+                    // Update status badges
+                    document.getElementById('statusText').innerText = statusText;
+                    document.getElementById('statusText2').innerHTML = statusIcon;
+
+                    var statusBadge = document.getElementById('statusBadge');
+                    statusBadge.className = 'badge ' + (isActive ? 'bg-success' : 'bg-danger');
+
+                    // Update button
+                    button.className = 'btn ' + (isActive ? 'btn-warning' : 'btn-success') + ' btn-sm ms-2';
+                    button.innerHTML = '<i class="fas ' + (isActive ? 'fa-pause' : 'fa-play') + '"></i> ' + (isActive ? 'Suspend' : 'Activate');
+
+                    alert('✅ ' + result.message);
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                alert('Error toggling user status');
+                console.error(error);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function generateNewCode(userId) {
+            if (!confirm('Generate a new access code for this user?\n\nThe old code will be replaced.')) {
+                return;
+            }
+
+            try {
+                var formData = new FormData();
+                formData.append('userId', userId);
+
+                var response = await fetch('/Admin/GenerateAccessCode', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                var result = await response.json();
+
+                if (result.success) {
+                    alert('✅ ' + result.message + '\nNew Code: ' + result.code);
+                    location.reload();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                alert('Error generating new code');
+                console.error(error);
+            }
+        }
+    </script>
+}

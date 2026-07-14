@@ -1,0 +1,200 @@
+﻿@model Grand_Arbre_portal.ViewModels.UploadDocumentViewModel
+@{
+    ViewData["Title"] = "Upload Document for Client";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+            <h4><i class="fas fa-cloud-upload-alt"></i> Upload Document for Client</h4>
+        </div>
+        <div class="card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">@TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Error"]</div>
+            }
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label">Select Client <span class="text-danger">*</span></label>
+                    <select id="SelectedClientId" name="SelectedClientId" class="form-control" required>
+                        <option value="">-- Select Client --</option>
+                        @if (ViewBag.Clients != null)
+                        {
+                            foreach (var client in ViewBag.Clients)
+                            {
+                                <option value="@client.Id">@client.FullName - @client.Email</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Document Title <span class="text-danger">*</span></label>
+                    <input type="text" id="Title" name="Title" class="form-control" placeholder="Enter document title" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea id="Description" name="Description" class="form-control" rows="3" placeholder="Enter document description"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Document Category</label>
+                    <select id="Category" name="Category" class="form-control">
+                        <option value="CIPC">CIPC Registration</option>
+                        <option value="Tax">Tax Clearance Certificate</option>
+                        <option value="BBBEE">BBBEE Certificate</option>
+                        <option value="CSD">CSD Registration</option>
+                        <option value="CIDB">CIDB Registration</option>
+                        <option value="Profile">Business Profile</option>
+                        <option value="Financial">Financial Documents</option>
+                        <option value="Branding">Branding (Logo, Letterhead)</option>
+                        <option value="Share">Share Certificate</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Expiry Date (Optional)</label>
+                    <input type="date" id="ExpiryDate" name="ExpiryDate" class="form-control" />
+                    <small class="text-muted">Set expiry date if this document expires (e.g., certificates)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Select File <span class="text-danger">*</span></label>
+                    <input type="file" id="File" name="File" class="form-control" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                    <small class="text-muted">Allowed: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</small>
+                </div>
+
+                <button type="submit" class="btn" style="background: #D4AF37; color: #0F4C5C;">
+                    <i class="fas fa-upload"></i> Upload for Client
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+            <h4><i class="fas fa-history"></i> My Recent Uploads</h4>
+        </div>
+        <div class="card-body">
+            <div id="myDocuments"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn {
+        transition: all 0.3s;
+    }
+
+        .btn:hover {
+            background: #B88A1A !important;
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .form-control:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        async function loadMyDocuments() {
+            try {
+                const response = await fetch('/Document/MyDocuments');
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const content = doc.querySelector('.container')?.innerHTML || '<div class="text-muted">No documents found</div>';
+                document.getElementById('myDocuments').innerHTML = content;
+            } catch (error) {
+                console.error('Error loading documents:', error);
+                document.getElementById('myDocuments').innerHTML = '<div class="text-muted">Error loading documents</div>';
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Get form values
+            var selectedClientId = document.getElementById('SelectedClientId').value;
+            var title = document.getElementById('Title').value.trim();
+            var description = document.getElementById('Description').value.trim();
+            var category = document.getElementById('Category').value;
+            var expiryDate = document.getElementById('ExpiryDate').value;
+            var fileInput = document.getElementById('File');
+
+            // Validate
+            if (!selectedClientId) {
+                alert('Please select a client');
+                return;
+            }
+
+            if (!title) {
+                alert('Please enter a document title');
+                return;
+            }
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert('Please select a file to upload');
+                return;
+            }
+
+            // Create FormData
+            var formData = new FormData();
+            formData.append('SelectedClientId', selectedClientId);
+            formData.append('Title', title);
+            formData.append('Description', description);
+            formData.append('Category', category);
+            formData.append('ExpiryDate', expiryDate);
+            formData.append('File', fileInput.files[0]);
+
+            var submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+            try {
+                var response = await fetch('/Document/Upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                var result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Document uploaded successfully!');
+                    location.reload();
+                } else {
+                    alert('❌ ' + (result.message || 'Error uploading document'));
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload for Client';
+                }
+            } catch (error) {
+                alert('Error uploading document');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload for Client';
+            }
+        });
+
+        // Load my documents on page load
+        loadMyDocuments();
+    </script>
+}

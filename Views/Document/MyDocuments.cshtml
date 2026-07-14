@@ -1,0 +1,578 @@
+﻿@model List<Grand_Arbre_portal.Models.Document>
+@{
+    ViewData["Title"] = "Document Dashboard";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+    var selectedCategory = ViewBag.SelectedCategory as string ?? "All";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="fw-bold" style="color: #0F4C5C;">
+                        <i class="fas fa-folder-open" style="color: #D4AF37;"></i> Document Dashboard
+                    </h2>
+                    <p class="text-muted">Manage all your documents in one place</p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (User.IsInRole("Admin") || User.IsInRole("Employee"))
+                    {
+                        <a href="/Document/Upload" class="btn btn-gold">
+                            <i class="fas fa-upload"></i> Upload
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder View -->
+    <div class="row" id="folderView">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="fas fa-folder"></i> Document Categories</h5>
+                        <span class="text-muted">@Model.Count total documents</span>
+                    </div>
+                    <div class="row" id="folderContainer">
+                        @{
+                            var categories = new Dictionary<string, string>
+                            {
+                                {"CIPC", "CIPC Registration"},
+                                {"Tax", "Tax Clearance"},
+                                {"BBBEE", "BBBEE Certificate"},
+                                {"CSD", "CSD Registration"},
+                                {"CIDB", "CIDB Registration"},
+                                {"Profile", "Business Profile"},
+                                {"Financial", "Financial Documents"},
+                                {"Branding", "Branding"},
+                                {"Share", "Share Certificate"},
+                                {"Other", "Other Documents"}
+                            };
+                            var categoryImages = new Dictionary<string, string>
+                            {
+                                {"CIPC", "/images/Folder-icons/CIPC-Logo.jpg"},
+                                {"Tax", "/images/Folder-icons/sars logo.png"},
+                                {"BBBEE", "/images/Folder-icons/bbbee.png"},
+                                {"CSD", "/images/Folder-icons/csd.png"},
+                                {"CIDB", "/images/Folder-icons/cidb.png"},
+                                {"Profile", "/images/Folder-icons/profile.png"},
+                                {"Financial", "/images/Folder-icons/financial.png"},
+                                {"Branding", "/images/Folder-icons/branding.png"},
+                                {"Share", "/images/Folder-icons/share certificate.png"},
+                                {"Other", "/images/Folder-icons/other.png"}
+                            };
+                        }
+                        @foreach (var cat in categories)
+                        {
+                            var count = Model.Count(d => d.Category == cat.Key);
+                            var imgSrc = categoryImages.ContainsKey(cat.Key) ? categoryImages[cat.Key] : "/images/folder-icons/default.png";
+                            <div class="col-lg-3 col-md-4 col-6 mb-3 folder-item" onclick="openFolder('@cat.Key')" style="cursor: pointer;">
+                                <div class="folder-card text-center" data-category="@cat.Key">
+                                    <div class="folder-icon">
+                                        <img src="@imgSrc" alt="@cat.Value" class="folder-img" 
+                                             onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fas fa-folder\' style=\'font-size: 64px; color: #D4AF37;\'></i>';" />
+                                    </div>
+                                    <div class="folder-name">@cat.Value</div>
+                                    <div class="folder-count">@count documents</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document List (Shows when folder is clicked) -->
+    <div class="row mt-4" id="documentListView" style="display: none;">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-folder-open"></i> 
+                            <span id="folderTitle">Documents</span>
+                            <span id="docCount" class="badge bg-light ms-2" style="color: #0F4C5C;">0</span>
+                        </h5>
+                        <button class="btn btn-sm btn-gold" onclick="goBack()">
+                            <i class="fas fa-arrow-left"></i> Back to Folders
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="documentList">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #D4AF37;"></i>
+                            <p class="mt-2 text-muted">Loading documents...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetFileIcon(string fileName)
+    {
+        var ext = System.IO.Path.GetExtension(fileName)?.ToLower();
+        return ext switch
+        {
+            ".pdf" => "fa-file-pdf text-danger",
+            ".doc" or ".docx" => "fa-file-word text-primary",
+            ".xls" or ".xlsx" => "fa-file-excel text-success",
+            ".ppt" or ".pptx" => "fa-file-powerpoint text-warning",
+            ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" => "fa-file-image text-info",
+            ".zip" or ".rar" or ".7z" => "fa-file-archive text-secondary",
+            ".txt" => "fa-file-alt text-secondary",
+            _ => "fa-file text-secondary"
+        };
+    }
+}
+
+<style>
+    /* Folder Styles */
+    .folder-card {
+        padding: 25px 15px;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #f8f9fa;
+        border: 3px solid transparent;
+        height: 100%;
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .folder-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        border-color: #D4AF37;
+        background: white;
+    }
+
+    .folder-card.active {
+        border-color: #D4AF37;
+        background: white;
+        box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+    }
+
+    .folder-icon {
+        margin-bottom: 12px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .folder-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 12px;
+        transition: all 0.3s;
+        border: 2px solid #e8ecf0;
+        padding: 5px;
+        background: white;
+    }
+
+    .folder-card:hover .folder-img {
+        transform: scale(1.08);
+        border-color: #D4AF37;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .folder-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0F4C5C;
+        margin-bottom: 4px;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .folder-count {
+        font-size: 0.75rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    /* Document Item Styles */
+    .document-item {
+        transition: all 0.2s;
+        border-left: 4px solid transparent;
+        padding: 15px 20px;
+        cursor: default;
+    }
+
+    .document-item:hover {
+        background: #f8f9fa;
+        border-left-color: #D4AF37;
+    }
+
+    .document-item .document-title {
+        color: #0F4C5C;
+        transition: all 0.2s;
+    }
+
+    .document-item:hover .document-title {
+        color: #D4AF37;
+    }
+
+    .document-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        border-radius: 10px;
+        flex-shrink: 0;
+        border: 1px solid #e8ecf0;
+    }
+
+    .document-icon i {
+        font-size: 24px;
+    }
+
+    .document-meta {
+        font-size: 0.8rem;
+    }
+
+    .document-people {
+        font-size: 0.85rem;
+        color: #0F4C5C;
+    }
+
+    .document-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .document-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+    }
+
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-gold:hover {
+        background: #B88A1A;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-sm {
+        padding: 5px 12px;
+        border-radius: 5px;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .folder-img {
+            width: 65px;
+            height: 65px;
+        }
+        .folder-card {
+            min-height: 130px;
+            padding: 15px 10px;
+        }
+        .folder-name {
+            font-size: 0.8rem;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .document-item .d-flex {
+            flex-wrap: wrap;
+        }
+        .document-actions {
+            margin-top: 10px;
+            width: 100%;
+            justify-content: flex-end;
+        }
+        .document-item {
+            padding: 12px 15px;
+        }
+        .document-icon {
+            width: 35px;
+            height: 35px;
+        }
+        .document-icon i {
+            font-size: 18px;
+        }
+        .folder-img {
+            width: 55px;
+            height: 55px;
+        }
+        .folder-card {
+            min-height: 110px;
+            padding: 12px 8px;
+        }
+        .folder-name {
+            font-size: 0.7rem;
+        }
+        .folder-count {
+            font-size: 0.65rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .folder-img {
+            width: 45px;
+            height: 45px;
+        }
+        .folder-card {
+            min-height: 90px;
+            padding: 10px 5px;
+        }
+        .folder-name {
+            font-size: 0.6rem;
+        }
+        .folder-count {
+            font-size: 0.55rem;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        var currentCategory = null;
+        var allDocuments = @Html.Raw(Json.Serialize(Model.Select(d => new {
+            d.Id,
+            d.Title,
+            d.Description,
+            d.FileName,
+            d.FilePath,
+            d.FileType,
+            d.UploadedByUserName,
+            d.ClientUserName,
+            d.Direction,
+            d.Status,
+            d.UploadedAt,
+            d.DownloadCount,
+            d.ExpiryDate,
+            d.Category,
+            d.UploadedByUserId
+        })));
+
+        // Open folder function
+        function openFolder(category) {
+            currentCategory = category;
+            
+            // Get folder name
+            var folderNames = {
+                'CIPC': 'CIPC Registration',
+                'Tax': 'Tax Clearance',
+                'BBBEE': 'BBBEE Certificate',
+                'CSD': 'CSD Registration',
+                'CIDB': 'CIDB Registration',
+                'Profile': 'Business Profile',
+                'Financial': 'Financial Documents',
+                'Branding': 'Branding',
+                'Share': 'Share Certificate',
+                'Other': 'Other Documents'
+            };
+            var folderName = folderNames[category] || category;
+            
+            // Update header
+            document.getElementById('folderTitle').textContent = folderName;
+            
+            // Highlight folder
+            document.querySelectorAll('.folder-card').forEach(function(card) {
+                card.classList.remove('active');
+            });
+            var clickedFolder = document.querySelector('.folder-card[data-category="' + category + '"]');
+            if (clickedFolder) {
+                clickedFolder.classList.add('active');
+            }
+            
+            // Filter documents - ONLY show documents in this folder
+            var filteredDocs = allDocuments.filter(function(doc) {
+                var docCategory = doc.category || 'Other';
+                return docCategory === category;
+            });
+            
+            // Update count
+            document.getElementById('docCount').textContent = filteredDocs.length;
+            
+            // Hide folder view, show document list
+            document.getElementById('folderView').style.display = 'none';
+            document.getElementById('documentListView').style.display = 'block';
+            
+            // Render documents
+            renderDocuments(filteredDocs);
+            
+            // Scroll to document list
+            document.getElementById('documentListView').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Render documents
+        function renderDocuments(docs) {
+            var container = document.getElementById('documentList');
+            
+            if (!docs || docs.length === 0) {
+                container.innerHTML = '<div class="text-center py-5"><i class="fas fa-folder-open" style="font-size: 48px; color: #ddd;"></i><p class="mt-2 text-muted">No documents in this folder</p></div>';
+                return;
+            }
+            
+            var html = '<div class="list-group list-group-flush">';
+            for (var i = 0; i < docs.length; i++) {
+                var doc = docs[i];
+                var icon = getFileIcon(doc.fileName);
+                var direction = doc.direction === 'EmployeeToClient' ? 'Employee → Client' : 'Client → Employee';
+                var uploadedBy = doc.uploadedByUserName || 'Unknown';
+                var clientName = doc.clientUserName || 'N/A';
+                var uploadedAt = new Date(doc.uploadedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                var expiryDate = doc.expiryDate ? new Date(doc.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+                var isExpired = doc.expiryDate && new Date(doc.expiryDate) < new Date();
+                
+                html += `
+                    <div class="list-group-item document-item">
+                        <div class="d-flex align-items-center">
+                            <div class="document-icon me-3">
+                                <i class="fas ${icon}" style="font-size: 24px;"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <h6 class="mb-0 fw-bold document-title">${escapeHtml(doc.title)}</h6>
+                                    <span class="badge bg-secondary">${escapeHtml(doc.category || 'Other')}</span>
+                                    ${doc.status === 'Active' ? '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Active</span>' : 
+                                      doc.status === 'Pending' ? '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pending</span>' : 
+                                      '<span class="badge bg-danger"><i class="fas fa-exclamation-circle"></i> Expired</span>'}
+                                </div>
+                                <div class="document-meta mt-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-arrow-right"></i> ${direction}
+                                    </small>
+                                </div>
+                                <div class="document-people mt-1">
+                                    <small>
+                                        <i class="fas fa-user text-primary"></i> 
+                                        <strong>Uploaded by:</strong> ${escapeHtml(uploadedBy)}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-user text-success"></i> 
+                                        <strong>For Client:</strong> ${escapeHtml(clientName)}
+                                    </small>
+                                </div>
+                                <div class="document-meta mt-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar-alt"></i> ${uploadedAt}
+                                        <i class="fas fa-download ms-2"></i> ${doc.downloadCount || 0} downloads
+                                    </small>
+                                </div>
+                                ${doc.description ? `<p class="document-description mt-1">${escapeHtml(doc.description)}</p>` : ''}
+                                ${expiryDate ? `<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Expires: ${expiryDate}${isExpired ? ' <span class="fw-bold">(EXPIRED)</span>' : ''}</small>` : ''}
+                            </div>
+                            <div class="document-actions ms-2">
+                                <a href="/Document/Download/${doc.id}" class="btn btn-sm btn-gold" title="Download">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                ${canDelete(doc.uploadedByUserId) ? `<button onclick="deleteDoc(${doc.id})" class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function getFileIcon(fileName) {
+            if (!fileName) return 'fa-file text-secondary';
+            var ext = fileName.split('.').pop().toLowerCase();
+            var icons = {
+                'pdf': 'fa-file-pdf text-danger',
+                'doc': 'fa-file-word text-primary',
+                'docx': 'fa-file-word text-primary',
+                'xls': 'fa-file-excel text-success',
+                'xlsx': 'fa-file-excel text-success',
+                'ppt': 'fa-file-powerpoint text-warning',
+                'pptx': 'fa-file-powerpoint text-warning',
+                'jpg': 'fa-file-image text-info',
+                'jpeg': 'fa-file-image text-info',
+                'png': 'fa-file-image text-info',
+                'gif': 'fa-file-image text-info',
+                'bmp': 'fa-file-image text-info',
+                'zip': 'fa-file-archive text-secondary',
+                'rar': 'fa-file-archive text-secondary',
+                '7z': 'fa-file-archive text-secondary',
+                'txt': 'fa-file-alt text-secondary'
+            };
+            return icons[ext] || 'fa-file text-secondary';
+        }
+
+        function canDelete(uploadedByUserId) {
+            var currentUserId = '@currentUserId';
+            var isAdmin = @(User.IsInRole("Admin") ? "true" : "false");
+            return isAdmin || uploadedByUserId === currentUserId;
+        }
+
+        function deleteDoc(id) {
+            if (confirm('Are you sure you want to delete this document?')) {
+                fetch('/Document/DeleteDocument?id=' + id, { method: 'POST' })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+            }
+        }
+
+        function goBack() {
+            document.getElementById('documentListView').style.display = 'none';
+            document.getElementById('folderView').style.display = 'block';
+            document.querySelectorAll('.folder-card').forEach(function(card) {
+                card.classList.remove('active');
+            });
+            document.getElementById('folderView').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}

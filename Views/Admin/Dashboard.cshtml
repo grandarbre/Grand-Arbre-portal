@@ -1,0 +1,376 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                <div class="card-body">
+                    <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+                    <p class="mb-0">Welcome back, @User.Identity.Name! Here's an overview of your system.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-users" style="font-size: 48px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2" id="totalUsers">-</h3>
+                    <p class="text-muted mb-0">Total Users</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-file-alt" style="font-size: 48px; color: #D4AF37;"></i>
+                    <h3 class="mt-2" id="totalDocuments">-</h3>
+                    <p class="text-muted mb-0">Total Documents</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-download" style="font-size: 48px; color: #1E6F7F;"></i>
+                    <h3 class="mt-2" id="totalDownloads">-</h3>
+                    <p class="text-muted mb-0">Total Downloads</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <i class="fas fa-key" style="font-size: 48px; color: #D4AF37;"></i>
+                    <h3 class="mt-2" id="totalCodes">-</h3>
+                    <p class="text-muted mb-0">Access Codes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Distribution & Quick Actions -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-chart-pie"></i> User Role Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-crown" style="font-size: 32px; color: #D4AF37;"></i>
+                                <h4 id="adminCount">-</h4>
+                                <p class="mb-0">Admins</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-briefcase" style="font-size: 32px; color: #1E6F7F;"></i>
+                                <h4 id="employeeCount">-</h4>
+                                <p class="mb-0">Employees</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-user-friends" style="font-size: 32px; color: #0F4C5C;"></i>
+                                <h4 id="clientCount">-</h4>
+                                <p class="mb-0">Clients</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Admin/ManageUsers" class="btn btn-gold">
+                            <i class="fas fa-users"></i> Manage Users
+                        </a>
+                        <a href="/Document/MyDocuments" class="btn btn-outline-secondary">
+                            <i class="fas fa-folder-open"></i> View All Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & Access Codes Status -->
+    <div class="row">
+        <div class="col-md-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-clock"></i> Recent Users</h5>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <div id="recentUsersList">
+                        <div class="text-center text-muted">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-key"></i> Access Codes Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h4 id="totalCodesCount">-</h4>
+                                <p class="mb-0">Total</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h4 id="usedCodesCount">-</h4>
+                                <p class="mb-0">Used</p>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="border rounded p-3">
+                                <h4 id="activeCodesCount">-</h4>
+                                <p class="mb-0">Active</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header" style="background: linear-gradient(135deg, #0F4C5C, #1E6F7F); color: white;">
+                    <h5><i class="fas fa-info-circle"></i> System Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Database:</strong>
+                            <p class="text-muted">SQLite</p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Security:</strong>
+                            <p class="text-muted">ASP.NET Core Identity</p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Server Time:</strong>
+                            <p class="text-muted" id="serverTime"></p>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Admin Email:</strong>
+                            <p class="text-muted">admin@grandarbre.co.za</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold {
+        background: #D4AF37;
+        color: #0F4C5C;
+        font-weight: bold;
+        border: none;
+        transition: all 0.3s;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+        .btn-gold:hover {
+            background: #B88A1A;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-secondary {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        font-weight: bold;
+        padding: 8px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #0F4C5C, #1E6F7F);
+    }
+
+    .border {
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+        .list-group-item:first-child {
+            border-top: none;
+        }
+
+    .badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        loadStatistics();
+        loadUserRoles();
+        loadRecentUsers();
+        loadAccessCodesStats();
+        updateServerTime();
+        setInterval(updateServerTime, 1000);
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/Admin/GetStatistics');
+                const stats = await response.json();
+
+                document.getElementById('totalUsers').innerText = stats.totalUsers;
+                document.getElementById('totalDocuments').innerText = stats.totalDocuments;
+                document.getElementById('totalDownloads').innerText = stats.totalDownloads;
+                document.getElementById('totalCodes').innerText = stats.totalAccessCodes;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function loadUserRoles() {
+            try {
+                const response = await fetch('/Admin/GetUsers');
+                const users = await response.json();
+
+                let adminCount = 0;
+                let employeeCount = 0;
+                let clientCount = 0;
+
+                for (let i = 0; i < users.length; i++) {
+                    if (users[i].role === 'Admin') adminCount++;
+                    else if (users[i].role === 'Employee') employeeCount++;
+                    else if (users[i].role === 'Client') clientCount++;
+                }
+
+                document.getElementById('adminCount').innerText = adminCount;
+                document.getElementById('employeeCount').innerText = employeeCount;
+                document.getElementById('clientCount').innerText = clientCount;
+            } catch (error) {
+                console.error('Error loading user roles:', error);
+            }
+        }
+
+        async function loadRecentUsers() {
+            try {
+                const response = await fetch('/Admin/GetUsers');
+                const users = await response.json();
+
+                const recentUsers = users.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+
+                if (recentUsers.length === 0) {
+                    document.getElementById('recentUsersList').innerHTML = '<div class="text-center text-muted">No users found</div>';
+                    return;
+                }
+
+                let html = '<div class="list-group">';
+                for (let i = 0; i < recentUsers.length; i++) {
+                    const user = recentUsers[i];
+                    let roleIcon = '';
+                    if (user.role === 'Admin') roleIcon = '👑';
+                    else if (user.role === 'Employee') roleIcon = '👔';
+                    else roleIcon = '👤';
+
+                    let date = new Date(user.createdAt).toLocaleDateString();
+
+                    html += '<div class="list-group-item">';
+                    html += '<div class="d-flex justify-content-between align-items-center">';
+                    html += '<div><strong>' + escapeHtml(user.fullName) + '</strong><br><small class="text-muted">' + escapeHtml(user.email) + '</small></div>';
+                    html += '<div class="text-end"><span class="badge" style="background: #D4AF37; color: #0F4C5C;">' + roleIcon + ' ' + user.role + '</span><br><small class="text-muted">Joined: ' + date + '</small></div>';
+                    html += '</div></div>';
+                }
+                html += '</div>';
+                document.getElementById('recentUsersList').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading recent users:', error);
+            }
+        }
+
+        async function loadAccessCodesStats() {
+            try {
+                const response = await fetch('/Admin/GetAllAccessCodes');
+                const codes = await response.json();
+
+                const total = codes.length;
+                const used = codes.filter(c => c.isUsed).length;
+                const active = codes.filter(c => c.status === 'Active').length;
+
+                document.getElementById('totalCodesCount').innerText = total;
+                document.getElementById('usedCodesCount').innerText = used;
+                document.getElementById('activeCodesCount').innerText = active;
+            } catch (error) {
+                console.error('Error loading access codes stats:', error);
+            }
+        }
+
+        function updateServerTime() {
+            const now = new Date();
+            document.getElementById('serverTime').innerHTML = now.toLocaleString();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+    </script>
+}
